@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id                String              @id @default(uuid())
+  name              String              @unique
+  vocation          String
+  ExperienceHistory ExperienceHistory[]
+
+  @@map("players")
+}
+
+model ExperienceHistory {
+  player_id  String @map("player_id")
+  experience BigInt
+  date       String
+  Player     Player @relation(fields: [player_id], references: [id])
+
+  @@id([player_id, date])
+  @@unique([player_id, date])
+  @@map("experience_history")
+}
+
+model NameHistory {
+  player_id  String   @id
+  name       String
+  changed_on DateTime @default(now())
+
+  @@map("name_history")
+}
