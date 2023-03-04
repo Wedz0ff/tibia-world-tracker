@@ -1,5 +1,6 @@
 import cors from '@fastify/cors';
 import Fastify from 'fastify';
+import { toNumber } from 'lodash';
 import { appRoutes } from './routes';
 
 const app = Fastify();
@@ -9,8 +10,8 @@ app.register(appRoutes);
 
 app
   .listen({
-    port: 3333,
+    port: toNumber(process.env.PORT || '3333'),
   })
   .then(() => {
-    console.log('Server listening on port 3333');
+    console.log('Server is running!');
   });
