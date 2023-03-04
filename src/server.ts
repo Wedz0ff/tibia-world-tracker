@@ -11,6 +11,7 @@ app.register(appRoutes);
 app
   .listen({
     port: toNumber(process.env.PORT || '3333'),
+    host: '0.0.0.0',
   })
   .then(() => {
     console.log('Server is running!');
