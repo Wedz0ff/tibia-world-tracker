@@ -35,44 +35,105 @@ export async function GetHighScoreEntries(
 }
 
 export async function GetHighscoreEntriesFromVocation(vocation?: String) {
-  let entries: any[] = [];
-
   console.log(`STARTED: Fetching highscores entries from ${vocation ?? 'all'}`);
 
-  for (let currentPage = 1; currentPage <= 20; currentPage++) {
-    const data = await GetHighScoreEntries(currentPage, vocation);
+  const promises: Promise<any>[] = [];
 
-    console.log(`Page: ${currentPage}/20`);
-    entries.push.apply(entries, data);
+  for (let currentPage = 1; currentPage <= 20; currentPage++) {
+    promises.push(GetHighScoreEntries(currentPage, vocation));
   }
 
-  console.log(
-    `COMPLETED: Fetching highscores entries from ${vocation ?? 'all'}`,
-  );
-  return entries;
+  try {
+    const data = await Promise.all(promises);
+
+    const entries = data.reduce((prev, curr) => prev.concat(curr), []);
+
+    console.log(
+      `COMPLETED: Fetching highscores entries from ${vocation ?? 'all'}`,
+    );
+    return entries;
+  } catch (error) {
+    console.log('unexpected error: ', error);
+    return 'An unexpected error occurred';
+  }
 }
 
 export async function GetHighscoreEntriesFromAll() {
   const vocations = ['knights', 'paladins', 'druids', 'sorcerers'];
 
-  let entries: any[] = [];
+  console.log(`STARTED: Fetching highscores entries from all vocations`);
+
+  const promises: Promise<any>[] = [];
 
   for (const vocation of vocations) {
-    const vocEntries = await GetHighscoreEntriesFromVocation(vocation);
-    entries.push.apply(entries, vocEntries);
+    promises.push(GetHighscoreEntriesFromVocation(vocation));
   }
 
-  entries.forEach((object) => {
-    delete object['rank'];
-  });
+  try {
+    const data = await Promise.all(promises);
 
-  entries.sort((a, b) => b.level - a.level);
+    const entries = data.reduce((prev, curr) => prev.concat(curr), []);
 
-  console.log(
-    `Total entries: ${entries.length} - Highest Level: ${
-      entries.at(0)!.level
-    } - Lowest Level: ${entries.at(-1)!.level}`,
-  );
+    entries.forEach((object) => {
+      delete object['rank'];
+    });
 
-  return entries;
+    entries.sort((a, b) => b.level - a.level);
+
+    console.log(
+      `COMPLETED: Fetching highscores entries from all vocations - Total entries: ${
+        entries.length
+      } - Highest Level: ${entries.at(0)!.level} - Lowest Level: ${
+        entries.at(-1)!.level
+      }`,
+    );
+
+    return entries;
+  } catch (error) {
+    console.log('unexpected error: ', error);
+    return 'An unexpected error occurred';
+  }
 }
+
+// export async function GetHighscoreEntriesFromVocation(vocation?: String) {
+//   let entries: any[] = [];
+
+//   console.log(`STARTED: Fetching highscores entries from ${vocation ?? 'all'}`);
+
+//   for (let currentPage = 1; currentPage <= 20; currentPage++) {
+//     const data = await GetHighScoreEntries(currentPage, vocation);
+
+//     console.log(`Page: ${currentPage}/20`);
+//     entries.push.apply(entries, data);
+//   }
+
+//   console.log(
+//     `COMPLETED: Fetching highscores entries from ${vocation ?? 'all'}`,
+//   );
+//   return entries;
+// }
+
+// export async function GetHighscoreEntriesFromAll() {
+//   const vocations = ['knights', 'paladins', 'druids', 'sorcerers'];
+
+//   let entries: any[] = [];
+
+//   for (const vocation of vocations) {
+//     const vocEntries = await GetHighscoreEntriesFromVocation(vocation);
+//     entries.push.apply(entries, vocEntries);
+//   }
+
+//   entries.forEach((object) => {
+//     delete object['rank'];
+//   });
+
+//   entries.sort((a, b) => b.level - a.level);
+
+//   console.log(
+//     `Total entries: ${entries.length} - Highest Level: ${
+//       entries.at(0)!.level
+//     } - Lowest Level: ${entries.at(-1)!.level}`,
+//   );
+
+//   return entries;
+// }
